@@ -1,15 +1,15 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-// �ڼ�ʱ�����º��ȡʱ�䡣
-// �����ީ`������˕r�g��ȡ�ä��롣
+// ﾔﾚｼﾆﾊｱﾆ・ﾂｺﾁﾈ｡ﾊｱｼ茖｣
+// ･ｿ･､･ﾞｩ`ｸ・ﾂ矣､ﾋ瓶馮､｡ｵﾃ､ｹ､・｣
 [DefaultExecutionOrder(300)]
 [RequireComponent(typeof(Rigidbody2D))]
 public class TimeRotatingPlatform : MonoBehaviour
 {
-    [Header("�ؿ���ʱ��")]
+    [Header("计时器")]
     [SerializeField] private AirborneTimer airborneTimer;
 
-    [Header("��ת����")]
+    [Header("旋转方向")]
     [SerializeField] private bool clockwise = true;
 
     [SerializeField, Min(0f)]
@@ -27,7 +27,7 @@ public class TimeRotatingPlatform : MonoBehaviour
         if (airborneTimer == null)
         {
             Debug.LogError(
-                "TimeRotatingPlatform����� Airborne Timer��",
+                "TimeRotatingPlatform｣ｺﾇ・ｨ Airborne Timer｡｣",
                 this
             );
 
@@ -37,8 +37,8 @@ public class TimeRotatingPlatform : MonoBehaviour
 
     private void Start()
     {
-        // �������������õĳ�ʼ�Ƕȡ�
-        // ���`����O���������ڽǶȤ�S�֤��롣
+        // ｱ｣ﾁ｡ｾｰﾖﾐﾉ靹ﾃｵﾄｳｼｽﾇｶﾈ｡｣
+        // ･ｷｩ`･ﾇﾔOｶｨ､ｷ､ｿｳﾚｽﾇｶﾈ､Sｳﾖ､ｹ､・｣
         targetAngle = rb.rotation;
         previousTimerTime = airborneTimer.ElapsedTime;
     }
@@ -47,8 +47,8 @@ public class TimeRotatingPlatform : MonoBehaviour
     {
         float currentTime = airborneTimer.ElapsedTime;
 
-        // ��ȡ��Ϸ��ʱ������������ʹ����ʵ������ʱ�䡣
-        // �g�r�g�ǤϤʤ������`�ॿ���ީ`�Ή��ӷ֤�ʹ�ä��롣
+        // ｶﾁﾈ｡ﾓﾎﾏｷｼﾆﾊｱﾆﾄﾔｿ｣ｬｲｻﾊｹﾓﾃﾏﾖﾊｵｾｭｹｵﾄﾊｱｼ茖｣
+        // 携瓶馮､ﾇ､ﾏ､ﾊ､ｯ｡｢･ｲｩ`･爭ｿ･､･ﾞｩ`､ﾎ沿ｼﾓｷﾖ､ｹﾓﾃ､ｹ､・｣
         float timerDelta = Mathf.Max(
             0f,
             currentTime - previousTimerTime
@@ -56,15 +56,15 @@ public class TimeRotatingPlatform : MonoBehaviour
 
         previousTimerTime = currentTime;
 
-        // Unity��Z�Ḻ����Ϊ˳ʱ�롣
-        // Unity�Ǥ�Z�S��ؓ���򤬕rӋ�ؤꡣ
+        // UnityｵﾄZﾖ盧ｺｷｽﾏｪﾋｳﾊｱﾕ・｣
+        // Unity､ﾇ､ﾏZﾝS､ﾎﾘ胴ｽﾏｬ瓶ﾓ興ﾘ､遙｣
         float direction = clockwise ? -1f : 1f;
 
         targetAngle += direction * rotationSpeed * timerDelta;
         targetAngle = Mathf.Repeat(targetAngle, 360f);
 
-        // ʱ��ֹͣʱĿ��ǶȲ��䣬ƽ̨���ֵ�ǰ����
-        // �r�gֹͣ�Ф�Ŀ�˽ǶȤ�䤨���������򤭤�S�֤��롣
+        // ﾊｱｼ莽｣ﾖｹﾊｱﾄｿｱ・ﾇｶﾈｲｻｱ茱ｬﾆｽﾌｨｱ｣ｳﾖｵｱﾇｰｳｯﾏ｣
+        // 瓶馮ﾍ｣ﾖｹﾖﾐ､ﾏﾄｿ侏ｽﾇｶﾈ､荀ｨ､ｺ｡｢､ｽ､ﾎﾏｭ､Sｳﾖ､ｹ､・｣
         rb.MoveRotation(targetAngle);
     }
 }

@@ -1,4 +1,4 @@
-using TMPro;
+ï»¿using TMPro;
 using UnityEngine;
 
 [DefaultExecutionOrder(300)]
@@ -6,17 +6,21 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class TimedPlatform : MonoBehaviour
 {
-    [Header("¹Ø¿¨¼ÆÊ±Æ÷")]
+    [Header("å…³å¡è®¡æ—¶å™¨")]
     [SerializeField] private AirborneTimer airborneTimer;
 
-    [Header("ÉúĞ§ÃëÊı")]
+    [Header("ç”Ÿæ•ˆç§’æ•°")]
     [SerializeField, Min(0)]
     private int targetSecond = 6;
 
-    [Header("ÃëÊıÎÄ×Ö")]
+    [Header("åˆ¤æ–­æ¨¡å¼ï¼šéƒ½ä¸å‹¾é€‰æ—¶ä¸ºç­‰äº")]
+    [SerializeField] private bool greaterOrEqual = false;
+    [SerializeField] private bool lessOrEqual = false;
+
+    [Header("ç§’æ•°æ–‡å­—")]
     [SerializeField] private TMP_Text secondText;
 
-    [Header("Î´ÉúĞ§Ê±µÄÍâ¹Û")]
+    [Header("æœªç”Ÿæ•ˆæ—¶çš„å¤–è§‚")]
     [SerializeField, Range(0f, 1f)]
     private float inactiveOpacity = 0.25f;
 
@@ -25,6 +29,10 @@ public class TimedPlatform : MonoBehaviour
 
     private Color originalColor;
     private Color originalNumberColor;
+
+    // é˜²æ­¢æ¨¡å¼å†²çªæ—¶ï¼Œæ¯ä¸ªç‰©ç†å¸§éƒ½è¾“å‡ºè­¦å‘Šã€‚
+    // ãƒ¢ãƒ¼ãƒ‰ç«¶åˆæ™‚ã«æ¯ãƒ•ãƒ¬ãƒ¼ãƒ è­¦å‘ŠãŒå‡ºã‚‹ã“ã¨ã‚’é˜²ãã€‚
+    private bool conflictWarningShown;
 
     private void Awake()
     {
@@ -37,8 +45,6 @@ public class TimedPlatform : MonoBehaviour
         {
             originalNumberColor = secondText.color;
 
-            // Êı×ÖÏÔÊ¾ÔÚÆ½Ì¨Ç°Ãæ¡£
-            // Êı×Ö¤ò¥×¥é¥Ã¥È¥Õ¥©©`¥à¤è¤êÊÖÇ°¤ËÃè»­¤¹¤ë¡£
             Renderer numberRenderer =
                 secondText.GetComponent<Renderer>();
 
@@ -55,12 +61,14 @@ public class TimedPlatform : MonoBehaviour
         if (airborneTimer == null)
         {
             Debug.LogError(
-                "TimedPlatform£ºÇë°ó¶¨ Airborne Timer¡£",
+                "TimedPlatformï¼šè¯·ç»‘å®š Airborne Timerã€‚",
                 this
             );
 
+            CheckModeConflict();
             UpdateNumber();
             ApplyState(false);
+
             enabled = false;
         }
     }
@@ -77,19 +85,56 @@ public class TimedPlatform : MonoBehaviour
 
     private void RefreshState()
     {
+        CheckModeConflict();
+        UpdateNumber();
+
         if (airborneTimer == null)
         {
             return;
         }
 
+        // ä½¿ç”¨è®¡æ—¶å™¨çš„å®Œæ•´ç§’æ•°ï¼Œèˆå»å°æ•°éƒ¨åˆ†ã€‚
+        // ã‚¿ã‚¤ãƒãƒ¼ã®å°æ•°éƒ¨åˆ†ã‚’åˆ‡ã‚Šæ¨ã¦ã€æ•´æ•°ç§’ã‚’ä½¿ç”¨ã™ã‚‹ã€‚
         int currentSecond = Mathf.FloorToInt(
             airborneTimer.ElapsedTime
         );
 
-        bool isActive = currentSecond == targetSecond;
+        bool isActive;
 
-        UpdateNumber();
+        if (greaterOrEqual && !lessOrEqual)
+        {
+            isActive = currentSecond >= targetSecond;
+        }
+        else if (lessOrEqual && !greaterOrEqual)
+        {
+            isActive = currentSecond <= targetSecond;
+        }
+        else
+        {
+            // éƒ½æœªé€‰æ‹©æˆ–å‘ç”Ÿå†²çªæ—¶ï¼Œä½¿ç”¨ç­‰äºæ¨¡å¼ã€‚
+            // æœªé¸æŠã€ã¾ãŸã¯ç«¶åˆæ™‚ã¯ç­‰ã—ã„å ´åˆã®ã¿æœ‰åŠ¹ã«ã™ã‚‹ã€‚
+            isActive = currentSecond == targetSecond;
+        }
+
         ApplyState(isActive);
+    }
+
+    private void CheckModeConflict()
+    {
+        bool hasConflict = greaterOrEqual && lessOrEqual;
+
+        if (hasConflict && !conflictWarningShown)
+        {
+            Debug.LogWarning(
+                "TimedPlatformï¼šGreater Or Equal ä¸ Less Or Equal " +
+                "ä¸èƒ½åŒæ—¶å‹¾é€‰ã€‚å½“å‰æš‚æ—¶æŒ‰â€œç­‰äºâ€æ¨¡å¼å¤„ç†ã€‚",
+                this
+            );
+        }
+
+        // å†²çªè§£é™¤åï¼Œå…è®¸ä¸‹ä¸€æ¬¡å†²çªé‡æ–°è¾“å‡ºè­¦å‘Šã€‚
+        // ç«¶åˆè§£æ¶ˆå¾Œã¯ã€æ¬¡ã®ç«¶åˆæ™‚ã«å†ã³è­¦å‘Šã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹ã€‚
+        conflictWarningShown = hasConflict;
     }
 
     private void UpdateNumber()
@@ -99,13 +144,22 @@ public class TimedPlatform : MonoBehaviour
             return;
         }
 
-        // ×Ô¶¯ÏÔÊ¾InspectorÖĞÉèÖÃµÄÉúĞ§ÃëÊı¡£
-        // Inspector¤ÇÔO¶¨¤·¤¿ÓĞ„¿ÃëÊı¤ò×Ô„Ó±íÊ¾¤¹¤ë¡£
-        string number = targetSecond.ToString();
+        string prefix = "";
 
-        if (secondText.text != number)
+        if (greaterOrEqual && !lessOrEqual)
         {
-            secondText.text = number;
+            prefix = "â‰¥";
+        }
+        else if (lessOrEqual && !greaterOrEqual)
+        {
+            prefix = "â‰¤";
+        }
+
+        string label = prefix + targetSecond.ToString();
+
+        if (secondText.text != label)
+        {
+            secondText.text = label;
         }
     }
 
@@ -117,8 +171,6 @@ public class TimedPlatform : MonoBehaviour
             ? 1f
             : inactiveOpacity;
 
-        // Æ½Ì¨ºÍÊı×ÖÊ¹ÓÃÏàÍ¬µÄ²»Í¸Ã÷¶È±¶ÂÊ¡£
-        // ¥×¥é¥Ã¥È¥Õ¥©©`¥à¤ÈÊı×Ö¤ËÍ¬¤¸²»Í¸Ã÷¶È±¶ÂÊ¤òßmÓÃ¤¹¤ë¡£
         Color platformColor = originalColor;
         platformColor.a *= opacityMultiplier;
         platformRenderer.color = platformColor;

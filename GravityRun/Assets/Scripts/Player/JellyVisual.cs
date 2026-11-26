@@ -1,20 +1,20 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(100)]
 [RequireComponent(typeof(SpriteRenderer))]
 public class JellyVisual : MonoBehaviour
 {
-    [Header("��ɫ����")]
+    [Header("RB")]
     [SerializeField] private Rigidbody2D playerRb;
 
-    [Header("��������")]
+    [Header("参数")]
     [SerializeField, Min(1f)] private float springStrength = 100f;
     [SerializeField, Min(0f)] private float damping = 8f;
     [SerializeField, Min(0f)] private float inertiaStrength = 0.08f;
     [SerializeField, Min(0f)] private float maxOffset = 0.35f;
 
-    [Header("��������")]
+    [Header("弹力范围")]
     [SerializeField, Range(1f, 4f)]
     private float bendPower = 1.5f;
 
@@ -33,7 +33,7 @@ public class JellyVisual : MonoBehaviour
     private float offsetVelocity;
     private float previousSpeed;
 
-    [Header("��Ծ����ع���")]
+    [Header("ﾌｾﾓ・莊ﾘｹ郞ｳ")]
     [SerializeField] private PlayerMovement playerMovement;
 
     [SerializeField, Min(1f)]
@@ -51,36 +51,35 @@ public class JellyVisual : MonoBehaviour
     [SerializeField, Min(0f)]
     private float maxLandingImpulse = 5f;
 
-    [Header("��������")]
+    [Header("下坠力度")]
     [SerializeField, Range(0f, 0.3f)]
     private float fallStretch = 0.12f;
 
     [SerializeField, Min(0.1f)]
     private float fullStretchSpeed = 12f;
 
-    [Header("ѹ������������")]
+    [Header("变形度")]
     [SerializeField, Range(0.4f, 1f)]
     private float minHeightScale = 0.65f;
 
     [SerializeField, Range(1f, 1.5f)]
     private float maxHeightScale = 1.25f;
 
-    // �߶����ԭ�εı仯����0��ʾԭʼ�߶ȡ�
-    // Ԫ�θߤ�����Ή仯����0��Ԫ�θߤ���
+    // ｸﾟｶﾈﾏ犖ﾔﾔｭﾐﾎｵﾄｱ莉ｯﾁｿ｣ｬ0ｱ桄ｾﾔｭﾊｼｸﾟｶﾈ｡｣
+    // ﾔｪ､ﾎｸﾟ､ｵ､ｫ､鬢ﾎ我ｻｯﾁｿ｡｣0､ﾏﾔｪ､ﾎｸﾟ､ｵ｡｣
     private float squashOffset;
     private float squashVelocity;
 
     private float previousVerticalSpeed;
     private bool wasGrounded;
 
-    [Header("�������")]
     [SerializeField] private Sprite airborneSprite;
 
     private bool recallSquashActive;
     private float recallHeightScale = 1f;
 
-    // ��ʼ�������ݳ�����������״��
-    // λ�Ñ����ݳ��ˤ����״�������_ʼ���롣
+    // ｿｪﾊｼﾓﾉﾉﾁｻﾘﾑﾝｳﾘﾖﾆﾉ﨓衵ﾎﾗｴ｡｣
+    // ﾎｻﾖﾃ諾､ｷﾑﾝｳﾋ､隍・ﾎﾗｴﾖﾆﾓ_ﾊｼ､ｹ､・｣
     public void BeginRecallSquash()
     {
         recallSquashActive = true;
@@ -92,15 +91,15 @@ public class JellyVisual : MonoBehaviour
         squashVelocity = 0f;
     }
 
-    // �����ݳ��е�����߶ȱ�����
-    // �ݳ��Фθߤ����ʤ��O�����롣
+    // ﾉ靹ﾃﾑﾝｳﾐｵﾄﾉ﨓蟶ﾟｶﾈｱﾈﾀ｡｣
+    // ﾑﾝｳﾐ､ﾎｸﾟ､ｵｱｶﾂﾊ､Oｶｨ､ｹ､・｣
     public void SetRecallHeight(float value)
     {
         recallHeightScale = Mathf.Clamp(value, 0.4f, 1f);
     }
 
-    // �ָ�ͨ���Ĺ���ģ�⡣
-    // ͨ���Υ���`���ߥ��`�����ˑ�����
+    // ｻﾖｸｴﾍｨｳ｣ｵﾄｹ郞ｳﾄ｣ﾄ筍｣
+    // ﾍｨｳ｣､ﾎ･ｼ･・`･ｷ･ﾟ･螂・`･ｷ･逾ﾋ諾､ｹ｡｣
     public void EndRecallSquash()
     {
         recallSquashActive = false;
@@ -127,7 +126,7 @@ public class JellyVisual : MonoBehaviour
         if (playerRb == null || sourceRenderer.sprite == null)
         {
             Debug.LogError(
-                "JellyVisual����� Player Rb�������ý��� Sprite��",
+                "JellyVisual｣ｺﾇ・ｨ Player Rb｣ｬｲ｢ﾉ靹ﾃｽｺﾄﾒ Sprite｡｣",
                 this
             );
 
@@ -145,15 +144,15 @@ public class JellyVisual : MonoBehaviour
 
         previousSpeed = GetLocalHorizontalSpeed();
 
-        // ԭ����ֻ�ṩ��״��������������ʾ��
-        // Ԫ�Υ��ץ饤�Ȥ���״��ȡ�ä�ʹ�����¤�����å�����軭���롣
+        // ﾔｭｾｫﾁ鰒ｻﾌ盪ｩﾐﾎﾗｴ｣ｬﾓﾉﾐﾂﾍｺﾔﾔﾊｾ｡｣
+        // ﾔｪ､ﾎ･ｹ･ﾗ･鬣､･ﾈ､ﾏﾐﾎﾗｴ､ﾎﾈ｡ｵﾃ､ﾋﾊｹ､､｡｢ﾐﾂ､ｷ､､･皈ﾃ･ｷ･螟ﾇﾃ霆ｭ､ｹ､・｣
         sourceRenderer.enabled = false;
     }
 
     private float GetLocalHorizontalSpeed()
     {
-        // ת������۾ֲ��ռ䣬ʹ���ź�Ĺ��Է�����Ȼ��ȷ��
-        // ��ʾ�Υ��`������g�؉�Q�������s���T�Է����Ϥ碌�롣
+        // ﾗｪｻｻｵｽﾍ篁ﾛｾﾖｲｿｿﾕｼ茱ｬﾊｹﾋﾅｺﾄｹﾟﾐﾔｷｽﾏﾔﾈｻﾕﾈｷ｡｣
+        // ｱ桄ｾ､ﾎ･愰`･ｫ･・ﾕ馮､ﾘ我轍､ｷ｡｢宙ｿs矣､竭Tﾐﾔｷｽﾏﾏ､・ｻ､・｣
         Vector3 worldVelocity = new Vector3(
             playerRb.linearVelocity.x,
             0f,
@@ -172,8 +171,8 @@ public class JellyVisual : MonoBehaviour
 
         UpdateSquash();
 
-        // �����ݳ��ڼ䲻����ˮƽ�ζ���
-        // λ�Ñ����ݳ��Ф����ҤΓe����ؤͤʤ���
+        // ﾉﾁｻﾘﾑﾝｳﾚｼ茣ｻｵｼﾓﾋｮﾆｽｻﾎｶｯ｡｣
+        // ﾎｻﾖﾃ諾､ｷﾑﾝｳﾐ､ﾏﾗﾒ､ﾎ兎､・ﾘ､ﾍ､ﾊ､､｡｣
         if (recallSquashActive)
         {
             offset = 0f;
@@ -185,12 +184,12 @@ public class JellyVisual : MonoBehaviour
         float speedChange = currentSpeed - previousSpeed;
         previousSpeed = currentSpeed;
 
-        // �������Ҽ���ʱ����۶����������Ĺ��ԡ�
-        // ���夬�Ҥؼ��٤���ȡ��ϲ��ˤ����򤭤ΑT�Ԥ��뤨�롣
+        // ｱｾﾌ袞ﾒｼﾓﾋﾙﾊｱ｣ｬﾍ篁ﾛｶ･ｲｿｻﾃﾏﾄｹﾟﾐﾔ｡｣
+        // ｱｾﾌ螟ｬﾓﾒ､ﾘｼﾓﾋﾙ､ｹ､・ﾈ｡｢ﾉﾏｲｿ､ﾋ､ﾏﾗｭ､ﾎ禅ﾐﾔ､・ｨ､・｣
         offsetVelocity -= speedChange * inertiaStrength;
 
-        // ��С�����㵯�ɣ����ٲ����ϴ�ʱ�Ĳ��ȶ���
-        // С���ʿ̤ߤǥХͤ�Ӌ�㤷���������ʄӤ����֤��롣
+        // ｷﾖﾐ｡ｲｽｼﾆﾋ羞ｯｻﾉ｣ｬｼﾙｲﾎﾊｽﾏｴｱｵﾄｲｻﾎﾈｶｨ｡｣
+        // ﾐ｡､ｵ､ﾊｿﾌ､ﾟ､ﾇ･ﾐ･ﾍ､桐网ｷ｡｢ｲｻｰｲｶｨ､ﾊ・､ｭ､ﾖ､ｨ､・｣
         int steps = Mathf.CeilToInt(Time.fixedDeltaTime / 0.005f);
         float stepTime = Time.fixedDeltaTime / steps;
 
@@ -200,8 +199,8 @@ public class JellyVisual : MonoBehaviour
             offsetVelocity *= Mathf.Exp(-damping * stepTime);
             offset += offsetVelocity * stepTime;
 
-            // ���������Σ�����������������ٶȡ�
-            // �������������ޤ�����Ȥ��M���ٶȤ�ֹ��롣
+            // ﾏﾞﾖﾆﾗ鋗菻ﾎ｣ｬｲ｢ﾏ﨤ｼﾌﾐ箏ﾄﾋﾙｶﾈ｡｣
+            // ﾗ鋗菻ﾎﾁｿ､ﾆﾏﾞ､ｷ｡｢ﾍ竄ﾈ､ﾘﾟM､猴ﾙｶﾈ､ｹ､皃・｣
             if (Mathf.Abs(offset) > maxOffset)
             {
                 offset = Mathf.Clamp(offset, -maxOffset, maxOffset);
@@ -231,12 +230,12 @@ public class JellyVisual : MonoBehaviour
                 maxHeightScale
             );
 
-        // �߶Ƚ���ʱ�ӿ����߶�����ʱ��խ�����Ʊ��������
-        // �ߤ����p��Ⱥ���򉈤䤷���ߤ���������Ⱥ����p�餹��
+        // ｸﾟｶﾈｽｵｵﾍﾊｱｼﾓｿ惞ｬｸﾟｶﾈﾔﾓﾊｱｱ蒄ｭ｣ｬｽ・ﾆｱ｣ｳﾖﾃ貊｡｣
+        // ｸﾟ､ｵ､ｬ徘､・ﾈｺ盥愛荀ｷ｡｢ｸﾟ､ｵ､ｬ沿､ｨ､・ﾈｺ盥p､鬢ｹ｡｣
         float widthScale = 1f / heightScale;
 
-        // ԭ�����ˮƽ���ģ����ݲ������ĵ�Sprite���ġ�
-        // ��������ΥԥܥåȤˤ⌝�ꤹ���å����ˮƽ���ġ�
+        // ﾔｭﾍﾄﾋｮﾆｽﾖﾐﾐﾄ｣ｬｼ貶ﾝｲｻﾔﾚﾖﾐﾐﾄｵﾄSpriteﾖ瞎ﾄ｡｣
+        // ﾖﾐﾑ・ﾔﾍ筅ﾎ･ﾔ･ﾜ･ﾃ･ﾈ､ﾋ､竚搶熙ｹ､・皈ﾃ･ｷ･螟ﾎﾋｮﾆｽﾖﾐﾐﾄ｡｣
         Sprite sprite = sourceRenderer.sprite;
 
         float centerX =
@@ -258,15 +257,15 @@ public class JellyVisual : MonoBehaviour
 
             Vector3 vertex = original;
 
-            // Χ��ˮƽ�������ſ��ȣ����������ҹ���������
-            // ˮƽ���Ĥ���ʤ˷���䤨�����ҤΑT�Ԥ�S�֤��롣
+            // ﾎｧﾈﾆﾋｮﾆｽﾖﾐﾐﾄﾋﾅｿ昮ﾈ｣ｬｲ｢ｱ｣ﾁﾒｹﾟﾐﾔﾍ萇奛｣
+            // ﾋｮﾆｽﾖﾐﾐﾄ､ﾊ､ﾋｷ荀ｨ｡｢ﾗﾒ､ﾎ禅ﾐﾔ､篝Sｳﾖ､ｹ､・｣
             vertex.x =
                 centerX +
                 (original.x - centerX) * widthScale +
                 offset * bendWeight;
 
-            // �Եײ�Ϊ��׼�ı�߶ȣ�����ѹ��ʱ�ŵ��ϸ���
-            // �¶ˤ���ʤ˸ߤ���䤨���R�s�r����Ԫ�������Τ������
+            // ﾒﾔｵﾗｲｿﾎｪｻｼｸﾄｱ荳ﾟｶﾈ｣ｬｱﾜﾃ簷ｹﾋｱｽﾅｵﾗﾉﾏｸ｡｡｣
+            // ﾏﾂｶﾋ､ﾊ､ﾋｸﾟ､ｵ､荀ｨ｡｢・ｿs瓶､ﾋﾗ耿ｪ､ｬｸ｡､ｯ､ﾎ､ﾀ､ｰ｡｣
             vertex.y =
                 bottomY +
                 (original.y - bottomY) * heightScale;
@@ -282,12 +281,12 @@ public class JellyVisual : MonoBehaviour
     {
         Sprite sprite = sourceRenderer.sprite;
 
-        // �˲��԰�ʹ��δ����Ķ���ͼƬ��
-        // ���Υƥ��Ȱ�Ǥϥ��ȥ饹δʹ�äλ����ʹ�ä��롣
+        // ｴﾋｲ簗ﾔｰ賁ｹﾓﾃﾎｴｴ・ﾄｶﾀﾁ｢ﾍｼﾆｬ｡｣
+        // ､ｳ､ﾎ･ﾆ･ｹ･ﾈｰ讀ﾇ､ﾏ･｢･ﾈ･鬣ｹﾎｴﾊｹﾓﾃ､ﾎｻｭﾏｹﾓﾃ､ｹ､・｣
         if (sprite.packed)
         {
             Debug.LogError(
-                "JellyVisual�����Ƚ���ͼƬ�� Sprite Atlas ���Ƴ���",
+                "JellyVisual｣ｺﾇ・ﾈｽｫｴﾋﾍｼﾆｬｴﾓ Sprite Atlas ﾖﾐﾒﾆｳ｡｣",
                 this
             );
             return;
@@ -305,7 +304,7 @@ public class JellyVisual : MonoBehaviour
         if (shader == null)
         {
             Debug.LogError(
-                "JellyVisual���Ҳ���������ʾ�� Shader��",
+                "JellyVisual｣ｺﾕﾒｲｻｵｽｾｫﾁ鰕ﾔﾊｾﾓﾃ Shader｡｣",
                 this
             );
             return;
@@ -315,16 +314,16 @@ public class JellyVisual : MonoBehaviour
         Texture2D texture = sprite.texture;
         float pixelsPerUnit = sprite.pixelsPerUnit;
 
-        // ����ͼƬ�ߴ�����ģ�����ԭʼ������λ�á�
-        // ���񥵥����ȥԥܥåȤ���Ԫ�α��ʤ�λ�ä�S�֤��롣
+        // ｸﾝﾍｼﾆｬｳﾟｴ郤ﾍﾖ瞎ﾄ｣ｬｱ｣ｳﾖﾔｭﾊｼｱﾈﾀﾓ・ｻﾖﾃ｡｣
+        // ｻｭﾏｵ･､･ｺ､ﾈ･ﾔ･ﾜ･ﾃ･ﾈ､ｫ､鰆ｪ､ﾎｱﾈﾂﾊ､ﾈﾎｻﾖﾃ､Sｳﾖ､ｹ､・｣
         float width = rect.width / pixelsPerUnit;
         height = rect.height / pixelsPerUnit;
 
         float leftX = -sprite.pivot.x / pixelsPerUnit;
         bottomY = -sprite.pivot.y / pixelsPerUnit;
 
-        // ʹ�ù�������Ĺ�������
-        // 픵���Ф����һ�ʥ���åɤ����ɤ��롣
+        // ﾊｹﾓﾃｹｲﾏ昮･ｵ羞ﾄｹ贇｣
+        // 嵓ｵ网ｲﾓﾐ､ｹ､・ｻ､ﾊ･ｰ･・ﾃ･ﾉ､ﾉ､ｹ､・｣
         const int columns = 24;
         const int rows = 24;
 
@@ -356,8 +355,8 @@ public class JellyVisual : MonoBehaviour
                 originalVertices[index] = position;
                 deformedVertices[index] = position;
 
-                // ͼƬ��������������һһ��Ӧ��
-                // �������ˤȥ�å������ˤ򌝏ꤵ���롣
+                // ﾍｼﾆｬﾗ・・・ｻﾒｻｶﾔﾓｦ｡｣
+                // ｻｭﾏﾋ､ﾈ･皈ﾃ･ｷ･袮ﾋ､搶熙ｵ､ｻ､・｣
                 uvs[index] = new Vector2(
                     (rect.x + normalizedX * rect.width) / texture.width,
                     (rect.y + normalizedY * rect.height) / texture.height
@@ -426,8 +425,8 @@ public class JellyVisual : MonoBehaviour
         renderer.sortingLayerID = sourceRenderer.sortingLayerID;
         renderer.sortingOrder = sourceRenderer.sortingOrder;
 
-        // ��ʼ״̬����ԭͼ��״��
-        // ����״�B��Ԫ�������״��S�֤��롣
+        // ｳｼﾗｴﾌｬｱ｣ｳﾖﾔｭﾍｼﾐﾎﾗｴ｡｣
+        // ｳﾚﾗｴ腺､ﾏﾔｪｻｭﾏﾎﾐﾎﾗｴ､Sｳﾖ､ｹ､・｣
         offset = 0f;
         offsetVelocity = 0f;
     }
@@ -514,8 +513,8 @@ public class JellyVisual : MonoBehaviour
 
         float speedChange = verticalSpeed - previousVerticalSpeed;
 
-        // ������ϵ��ٶ�ͻ�䣬���ݵ�����Ծ��������Ծ��
-        // ���򤭤μ����ٶȉ仯��ʳ���������`�ƥ����פˤ⌝�ꤹ�롣
+        // ｼ・簪ﾏｵﾄﾋﾙｶﾈﾍｻｱ茱ｬｼ貶ﾝｵﾘﾃ賣ｾｺﾍﾍﾁﾀﾇﾌｾ｡｣
+        // ﾉﾏﾏｭ､ﾎｼｱ､ﾊﾋﾙｶﾈ我ｻｯ､ﾊｳｷ｡｢･ｳ･隧`･ﾆ･ｸ･罕ﾗ､ﾋ､竚搶熙ｹ､・｣
         bool justJumped =
             !grounded &&
             verticalSpeed > 1f &&
@@ -523,13 +522,13 @@ public class JellyVisual : MonoBehaviour
 
         if (justJumped)
         {
-            // ���߶ȵ���һ������ѹ���ĳ�����
-            // �ߤ��ΥХͤˈR�s����Υ���ѥ륹���뤨�롣
+            // ｸﾟｶﾈｵｯｻﾉﾒｻｸﾂﾑｹﾋﾄｳ蠱ｿ｡｣
+            // ｸﾟ､ｵ､ﾎ･ﾐ･ﾍ､ﾋ・ｿsｷｽﾏﾎ･､･ﾑ･・ｹ､・ｨ､・｣
             squashVelocity -= jumpSquashImpulse;
         }
 
-        // �ӿ��б�Ϊ���ʱ�����������ٶȾ���ѹ�����ȡ�
-        // ���Ф���ӵؤ����H�������ٶȤˏꤸ�ƈR�s���롣
+        // ｴﾓｿﾕﾖﾐｱ萸ｪﾂ莊ﾘﾊｱ｣ｬｸﾝﾂ蔆ﾂﾋﾙｶﾈｾｨﾑｹﾋｦｶﾈ｡｣
+        // ｿﾕﾖﾐ､ｫ､鮨ﾓｵﾘ､ｷ､ｿ・｡｢ﾂ蔆ﾂﾋﾙｶﾈ､ﾋ場､ｸ､ﾆ・ｿs､ｹ､・｣
         if (grounded && !wasGrounded)
         {
             float landingSpeed = Mathf.Max(0f, -previousVerticalSpeed);
@@ -542,8 +541,8 @@ public class JellyVisual : MonoBehaviour
             squashVelocity -= impulse;
         }
 
-        // ����Խ�죬Ŀ����״Խϸ����
-        // �����ٶȤ��٤��ۤɡ��k�L����״��Ŀ�ˤˤ��롣
+        // ﾏﾂﾂ蕚ｽｿ・ｬﾄｿｱ・ﾎﾗｴﾔｽﾏｸｳ､｡｣
+        // ﾂ蔆ﾂﾋﾙｶﾈ､ｬﾋﾙ､､､ﾛ､ﾉ｡｢ｿk餃､ﾎﾐﾎﾗｴ､ｿ侏､ﾋ､ｹ､・｣
         float targetOffset = 0f;
 
         if (!grounded && verticalSpeed < 0f)
@@ -603,12 +602,12 @@ public class JellyVisual : MonoBehaviour
             return;
         }
 
-        // ���ʹ��ԭͼƬ���Ϳ�ʹ�ÿ���ͼƬ��
-        // �ӵ��Ф�Ԫ���񡢿��ФǤϿ����û����ʹ�ä��롣
+        // ﾂ莊ﾘﾊｹﾓﾃﾔｭﾍｼﾆｬ｣ｬﾖﾍｿﾕﾊｹﾓﾃｿﾕﾖﾐﾍｼﾆｬ｡｣
+        // ｽﾓｵﾘﾖﾐ､ﾏﾔｪｻｭﾏ｢ｿﾕﾖﾐ､ﾇ､ﾏｿﾕﾖﾐﾓﾃｻｭﾏｹﾓﾃ､ｹ､・｣
         Sprite targetSprite = sourceRenderer.sprite;
 
-        // �Ϳջ����ڲ��������ݳ�ʱ��ʹ����ԾͼƬ��
-        // ���С��ޤ���λ�Ñ����ݳ��Фϥ����׻����ʹ�ä��롣
+        // ﾖﾍｿﾕｻﾔﾚｲ･ｷﾅﾉﾁｻﾘﾑﾝｳｱ｣ｬﾊｹﾓﾃﾌｾﾍｼﾆｬ｡｣
+        // ｿﾕﾖﾐ｡｢､ﾞ､ｿ､ﾏﾎｻﾖﾃ諾､ｷﾑﾝｳﾐ､ﾏ･ｸ･罕ﾗｻｭﾏｹﾓﾃ､ｹ､・｣
         if ((!playerMovement.IsGrounded || recallSquashActive) &&
             airborneSprite != null)
         {
@@ -620,8 +619,8 @@ public class JellyVisual : MonoBehaviour
             return;
         }
 
-        // ���л���ͼ��������ǰ����͵���״̬��
-        // �ƥ�������������Ф��椨����å���ȥХͤ�״�B��S�֤��롣
+        // ｽﾐｻｻﾌｼ｣ｬｱ｣ﾁｱﾇｰﾍﾍｵｯｻﾉﾗｴﾌｬ｡｣
+        // ･ﾆ･ｯ･ｹ･ﾁ･网ﾀ､ｱ､ﾐ､・讀ｨ｡｢･皈ﾃ･ｷ･螟ﾈ･ﾐ･ﾍ､ﾎﾗｴ腺､Sｳﾖ､ｹ､・｣
         Texture targetTexture = targetSprite.texture;
 
         if (runtimeMaterial.GetTexture("_MainTex") != targetTexture)

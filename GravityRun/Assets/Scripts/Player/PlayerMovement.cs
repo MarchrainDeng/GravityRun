@@ -7,25 +7,37 @@ public class PlayerMovement : MonoBehaviour
     [Header("移动设置")]
     [SerializeField] private float moveSpeed = 6f;
 
+    [SerializeField, Min(0f)]
+    private float airMoveMultiplier = 1f;
+
     [Header("跳跃设置")]
-    [SerializeField, Min(0f)] private float jumpSpeed = 10f;
+    [SerializeField, Min(0f)]
+    private float jumpSpeed = 10f;
 
     [SerializeField, Range(0f, 1f)]
     private float jumpCutMultiplier = 0.45f;
 
+    [Header("跳跃缓冲")]
+    [SerializeField, Min(0f)]
+    private float jumpBufferTime = 0.1f;
+
     [Header("土狼时间")]
-    [SerializeField, Min(0f)] private float coyoteTime = 0.15f;
+    [SerializeField, Min(0f)]
+    private float coyoteTime = 0.15f;
 
     [Header("落地检测")]
     [SerializeField] private Transform groundCheck;
+
     [SerializeField]
     private Vector2 groundCheckSize =
         new Vector2(0.5f, 0.08f);
+
     [SerializeField] private LayerMask groundLayer;
 
     private Rigidbody2D rb;
     private float moveInput;
     private float coyoteTimer;
+    private float jumpBufferTimer;
 
     // 缓存输入，避免物理更新漏掉短按。
     // 短い入力を物理更新で取りこぼさないように保存する。
@@ -37,8 +49,8 @@ public class PlayerMovement : MonoBehaviour
     // 今回のジャンプで、ボタンを離した際に上昇速度を下げられるか。
     private bool canCutJump;
 
-    // 供后续计时系统读取落地状态。
-    // 後のタイマーシステムから接地状態を参照できる。
+    // 供计时系统和其他功能读取落地状态。
+    // タイマーや他の機能から接地状態を参照できる。
     public bool IsGrounded { get; private set; }
 
     private bool inputLocked;
@@ -53,7 +65,10 @@ public class PlayerMovement : MonoBehaviour
         jumpRequested = false;
         jumpReleased = false;
         jumpHeld = false;
+        canCutJump = false;
+
         coyoteTimer = 0f;
+        jumpBufferTimer = 0f;
     }
 
     private void Awake()
@@ -85,8 +100,17 @@ public class PlayerMovement : MonoBehaviour
 
         UpdateCoyoteTime();
 
-        HandleMove();
+        // 先处理跳跃，让起跳当帧就使用空中移动系数。
+        // ジャンプを先に処理し、離陸した更新から空中移動倍率を適用する。
         HandleJump();
+        HandleMove();
+
+        // 跳跃请求在缓冲时间内持续有效。
+        // ジャンプ要求はバッファ時間内で保持する。
+        jumpBufferTimer = Mathf.Max(
+            0f,
+            jumpBufferTimer - Time.fixedDeltaTime
+        );
 
         jumpRequested = false;
         jumpReleased = false;
@@ -132,6 +156,10 @@ public class PlayerMovement : MonoBehaviour
         if (spaceKey.wasPressedThisFrame)
         {
             jumpRequested = true;
+
+            // 每次重新按下跳跃键时，刷新缓冲时间。
+            // ジャンプキーを押すたびにバッファ時間を更新する。
+            jumpBufferTimer = jumpBufferTime;
         }
 
         if (spaceKey.wasReleasedThisFrame)
@@ -159,7 +187,8 @@ public class PlayerMovement : MonoBehaviour
 
         // 上升时不视为落地，避免起跳瞬间重复获得跳跃机会。
         // 上昇中は接地扱いにせず、離陸直後の再ジャンプを防ぐ。
-        IsGrounded = touchesGround && rb.linearVelocity.y <= 0.01f;
+        IsGrounded = touchesGround &&
+                     rb.linearVelocity.y <= 0.01f;
     }
 
     private void UpdateCoyoteTime()
@@ -180,31 +209,48 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMove()
     {
+        // 落地时使用正常速度，滞空时乘以空中移动系数。
+        // 接地中は通常速度、空中では空中移動倍率を掛ける。
+        float speedMultiplier = IsGrounded
+            ? 1f
+            : airMoveMultiplier;
+
         rb.linearVelocity = new Vector2(
-            moveInput * moveSpeed,
+            moveInput * moveSpeed * speedMultiplier,
             rb.linearVelocity.y
         );
     }
 
     private void HandleJump()
     {
-        // 在地面上，或仍处于土狼时间内时，允许起跳。
-        // 接地中、またはコヨーテタイム中ならジャンプできる。
-        if (jumpRequested && (IsGrounded || coyoteTimer > 0f))
+        // 即时按键或尚未过期的缓冲，都视为跳跃请求。
+        // 今回の入力、または有効なバッファをジャンプ要求として扱う。
+        // 保留即时请求，使缓冲时间为0时也能正常跳跃。
+        // 即時入力を保持し、バッファが0秒でもジャンプ可能にする。
+        bool hasJumpRequest =
+            jumpRequested || jumpBufferTimer > 0f;
+
+        bool canJump =
+            IsGrounded || coyoteTimer > 0f;
+
+        if (hasJumpRequest && canJump)
         {
             rb.linearVelocity = new Vector2(
                 rb.linearVelocity.x,
                 jumpSpeed
             );
 
-            // 主动起跳会消耗本次跳跃机会。
-            // ジャンプすると今回のジャンプ権を消費する。
+            // 成功起跳后，消耗土狼时间和缓冲请求。
+            // ジャンプ成功時にコヨーテタイムとバッファを消費する。
             coyoteTimer = 0f;
+            jumpBufferTimer = 0f;
+            jumpRequested = false;
+
             IsGrounded = false;
             canCutJump = true;
         }
 
-        // 上升期间松开 Space，只降低一次上升速度。
+        // 上升期间松开Space，只降低一次上升速度。
         // 上昇中にSpaceを離すと、一度だけ上昇速度を下げる。
         if (canCutJump &&
             (jumpReleased || !jumpHeld) &&
@@ -219,7 +265,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // 已到达最高点或开始下落后，不再处理截断。
-        // 頂点に達した後、または下降中は上昇速度の変更を行わない。
+        // 頂点に達した後、または下降中は上昇速度を変更しない。
         if (rb.linearVelocity.y <= 0f)
         {
             canCutJump = false;
@@ -233,7 +279,10 @@ public class PlayerMovement : MonoBehaviour
         jumpReleased = false;
         jumpHeld = false;
         canCutJump = false;
+
         coyoteTimer = 0f;
+        jumpBufferTimer = 0f;
+
         IsGrounded = false;
     }
 
@@ -247,9 +296,14 @@ public class PlayerMovement : MonoBehaviour
         // 选中角色时显示脚底检测范围。
         // キャラクター選択時に足元の検出範囲を表示する。
         Gizmos.color = Color.green;
+
         Gizmos.DrawWireCube(
             groundCheck.position,
-            new Vector3(groundCheckSize.x, groundCheckSize.y, 0f)
+            new Vector3(
+                groundCheckSize.x,
+                groundCheckSize.y,
+                0f
+            )
         );
     }
 }
