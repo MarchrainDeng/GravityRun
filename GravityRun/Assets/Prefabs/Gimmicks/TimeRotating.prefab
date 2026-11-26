@@ -79,7 +79,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 87f4625780c033148b037f077a3ce1b8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -230,7 +230,7 @@ BoxCollider2D:
     drawMode: 1
     adaptiveTiling: 0
   m_AutoTiling: 1
-  m_Size: {x: 2.55, y: 0.6659719}
+  m_Size: {x: 2.56, y: 0.6659719}
   m_EdgeRadius: 0
 --- !u!50 &7216222833122347338
 Rigidbody2D:
