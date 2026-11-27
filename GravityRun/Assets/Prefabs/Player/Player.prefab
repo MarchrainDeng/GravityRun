@@ -165,6 +165,8 @@ GameObject:
   - component: {fileID: 6774591591995620895}
   - component: {fileID: 6655682896931176713}
   - component: {fileID: 2791044747456071015}
+  - component: {fileID: 8941838666124671456}
+  - component: {fileID: -765606703523423752}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -288,8 +290,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   moveSpeed: 6
+  airMoveMultiplier: 1
   jumpSpeed: 10
   jumpCutMultiplier: 0.45
+  jumpBufferTime: 0.1
   coyoteTime: 0.15
   groundCheck: {fileID: 6556858600951726061}
   groundCheckSize: {x: 0.5, y: 0.08}
@@ -333,3 +337,36 @@ CapsuleCollider2D:
   m_Offset: {x: 0.00000023841858, y: 0.01714021}
   m_Size: {x: 1.2056782, y: 1.2458481}
   m_Direction: 0
+--- !u!114 &8941838666124671456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3935534554448742680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5446db0503d4a244875fc3cdf75611c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PortalTraveller
+--- !u!114 &-765606703523423752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3935534554448742680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f89395fc7d3109d42bd6c2681b76c437, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PortalTeleportEffect
+  jellyVisual: {fileID: 6969864865175353385}
+  enterDuration: 0.2
+  exitDuration: 0.2
+  narrowWidth: 0.08
+  stretchedHeight: 1.35
+  exitBounceWidth: 1.15
+  exitBounceHeight: 0.88
+  enterParticlesPrefab: {fileID: 1665397158038516055, guid: 049b6d3635e86874cb47f1e3b8fdda62, type: 3}
+  exitParticlesPrefab: {fileID: 1506591359443433385, guid: 9ffa18419228485419efc8b6a5a51190, type: 3}

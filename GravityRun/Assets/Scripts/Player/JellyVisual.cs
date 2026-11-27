@@ -33,7 +33,7 @@ public class JellyVisual : MonoBehaviour
     private float offsetVelocity;
     private float previousSpeed;
 
-    [Header("ﾌｾﾓ・莊ﾘｹ郞ｳ")]
+    [Header("角色行动")]
     [SerializeField] private PlayerMovement playerMovement;
 
     [SerializeField, Min(1f)]
@@ -77,6 +77,11 @@ public class JellyVisual : MonoBehaviour
 
     private bool recallSquashActive;
     private float recallHeightScale = 1f;
+
+    private bool portalDeformationActive;
+    private float portalWidthScale = 1f;
+    private float portalHeightScale = 1f;
+    private Vector3 portalLocalOffset;
 
     // ｿｪﾊｼﾓﾉﾉﾁｻﾘﾑﾝｳﾘﾖﾆﾉ﨓衵ﾎﾗｴ｡｣
     // ﾎｻﾖﾃ諾､ｷﾑﾝｳﾋ､隍・ﾎﾗｴﾖﾆﾓ_ﾊｼ､ｹ､・｣
@@ -173,7 +178,7 @@ public class JellyVisual : MonoBehaviour
 
         // ﾉﾁｻﾘﾑﾝｳﾚｼ茣ｻｵｼﾓﾋｮﾆｽｻﾎｶｯ｡｣
         // ﾎｻﾖﾃ諾､ｷﾑﾝｳﾐ､ﾏﾗﾒ､ﾎ兎､・ﾘ､ﾍ､ﾊ､､｡｣
-        if (recallSquashActive)
+        if (recallSquashActive || portalDeformationActive)
         {
             offset = 0f;
             offsetVelocity = 0f;
@@ -221,6 +226,13 @@ public class JellyVisual : MonoBehaviour
         }
 
         UpdateAppearance();
+
+        // Portal deformation overrides normal jelly deformation.
+        if (portalDeformationActive)
+        {
+            ApplyPortalDeformation();
+            return;
+        }
 
         float heightScale = recallSquashActive
             ? recallHeightScale
@@ -608,7 +620,10 @@ public class JellyVisual : MonoBehaviour
 
         // ﾖﾍｿﾕｻﾔﾚｲ･ｷﾅﾉﾁｻﾘﾑﾝｳｱ｣ｬﾊｹﾓﾃﾌｾﾍｼﾆｬ｡｣
         // ｿﾕﾖﾐ｡｢､ﾞ､ｿ､ﾏﾎｻﾖﾃ諾､ｷﾑﾝｳﾐ､ﾏ･ｸ･罕ﾗｻｭﾏｹﾓﾃ､ｹ､・｣
-        if ((!playerMovement.IsGrounded || recallSquashActive) &&
+        // Use the airborne expression during either teleport effect.
+        if ((!playerMovement.IsGrounded ||
+             recallSquashActive ||
+             portalDeformationActive) &&
             airborneSprite != null)
         {
             targetSprite = airborneSprite;
@@ -626,6 +641,99 @@ public class JellyVisual : MonoBehaviour
         if (runtimeMaterial.GetTexture("_MainTex") != targetTexture)
         {
             runtimeMaterial.SetTexture("_MainTex", targetTexture);
+        }
+    }
+
+    public void BeginPortalDeformation()
+    {
+        portalDeformationActive = true;
+        portalWidthScale = 1f;
+        portalHeightScale = 1f;
+        portalLocalOffset = Vector3.zero;
+
+        offset = 0f;
+        offsetVelocity = 0f;
+        squashOffset = 0f;
+        squashVelocity = 0f;
+    }
+
+    public void SetPortalShape(
+        float widthScale,
+        float heightScale,
+        Vector3 portalWorldCenter,
+        float pullAmount)
+    {
+        portalWidthScale = Mathf.Max(0f, widthScale);
+        portalHeightScale = Mathf.Max(0f, heightScale);
+
+        Sprite sprite = sourceRenderer.sprite;
+
+        Vector3 originalCenter = new Vector3(
+            (sprite.rect.width * 0.5f - sprite.pivot.x)
+                / sprite.pixelsPerUnit,
+            bottomY + height * 0.5f,
+            0f
+        );
+
+        Vector3 localPortalCenter =
+            transform.InverseTransformPoint(portalWorldCenter);
+
+        // Deform only in the XY plane.
+        localPortalCenter.z = originalCenter.z;
+
+        portalLocalOffset =
+            (localPortalCenter - originalCenter)
+            * Mathf.Clamp01(pullAmount);
+    }
+
+    private void ApplyPortalDeformation()
+    {
+        Sprite sprite = sourceRenderer.sprite;
+
+        Vector3 center = new Vector3(
+            (sprite.rect.width * 0.5f - sprite.pivot.x)
+                / sprite.pixelsPerUnit,
+            bottomY + height * 0.5f,
+            0f
+        );
+
+        for (int i = 0; i < originalVertices.Length; i++)
+        {
+            Vector3 relative = originalVertices[i] - center;
+
+            deformedVertices[i] = center + new Vector3(
+                relative.x * portalWidthScale,
+                relative.y * portalHeightScale,
+                relative.z
+            ) + portalLocalOffset;
+        }
+
+        mesh.vertices = deformedVertices;
+        mesh.RecalculateBounds();
+    }
+
+    public void EndPortalDeformation()
+    {
+        portalDeformationActive = false;
+        portalWidthScale = 1f;
+        portalHeightScale = 1f;
+        portalLocalOffset = Vector3.zero;
+
+        offset = 0f;
+        offsetVelocity = 0f;
+        squashOffset = 0f;
+        squashVelocity = 0f;
+
+        // Avoid interpreting the teleport as a new impact.
+        if (playerRb != null)
+        {
+            previousSpeed = GetLocalHorizontalSpeed();
+            previousVerticalSpeed = playerRb.linearVelocity.y;
+        }
+
+        if (playerMovement != null)
+        {
+            wasGrounded = playerMovement.IsGrounded;
         }
     }
 }
